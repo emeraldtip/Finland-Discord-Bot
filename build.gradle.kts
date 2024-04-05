@@ -36,7 +36,7 @@ tasks {
 }
 
 tasks {
-    build {
+    testClasses {
         dependsOn(shadowJar)
     }
 }

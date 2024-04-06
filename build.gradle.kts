@@ -19,6 +19,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     implementation("net.dv8tion:JDA:5.0.0-beta.21")
     implementation("com.github.Carleslc.Simple-YAML:Simple-Yaml:1.8.4")
+    implementation("ch.qos.logback:logback-classic:1.2.8")
 }
 
 tasks.getByName<Test>("test") {

@@ -11,9 +11,6 @@ version = "0.0.1"
 repositories {
     mavenCentral()
 }
-base {
-    archivesBaseName = "Finlandbot"
-}
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
@@ -36,7 +33,7 @@ tasks {
 }
 
 tasks {
-    testClasses {
+    build {
         dependsOn(shadowJar)
     }
 }

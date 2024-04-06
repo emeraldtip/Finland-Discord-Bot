@@ -27,7 +27,7 @@ tasks.getByName<Test>("test") {
 
 tasks {
     named<ShadowJar>("shadowJar") {
-        archiveBaseName.set("shadow")
+        archiveBaseName.set("FinlandBot")
         mergeServiceFiles()
         manifest {
             attributes(mapOf("Main-Class" to "main"))

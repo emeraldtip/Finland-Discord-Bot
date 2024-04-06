@@ -43,6 +43,7 @@ public class main extends ListenerAdapter {
 
         JDA jda = JDABuilder.create(configuration.getString("token"), intents)
                 .setActivity(Activity.listening("you from within your walls"))
+                .addEventListeners(new main())
                 .build();
 
 
@@ -61,6 +62,9 @@ public class main extends ListenerAdapter {
         {
             case "ping":
                 event.reply("pong").queue();
+                break;
+            default:
+                event.reply("This command is still in development").queue();
                 break;
         }
     }

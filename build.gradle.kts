@@ -10,12 +10,15 @@ version = "0.0.1"
 
 repositories {
     mavenCentral()
+    maven("https://jitpack.io")
+
 }
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     implementation("net.dv8tion:JDA:5.0.0-beta.21")
+    implementation("com.github.Carleslc.Simple-YAML:Simple-Yaml:1.8.4")
 }
 
 tasks.getByName<Test>("test") {

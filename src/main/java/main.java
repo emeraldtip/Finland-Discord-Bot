@@ -181,7 +181,7 @@ public class main extends ListenerAdapter {
         if (playerID==null) {
 
             event.reply("Your minecraft account is not currently linked to your discord.\n" +
-                    "To link your discord account log onto **Aurora** and run the **'/discord link'** command " +
+                    "To link your discord account log onto **Aurora** and run the '**/discord link**' command " +
                     "and follow the instructions provided in chat."
             ).queue();
         }
@@ -189,7 +189,7 @@ public class main extends ListenerAdapter {
             String id = generateID(discID,playerID);
             boolean writeSuccess = storeID(id,playerID);
             if (writeSuccess) {
-                boolean dmSuccess = sendDM(event.getUser(),"Here's your voterID: "+id+"\nDo not share it with others!");
+                boolean dmSuccess = sendDM(event.getUser(),"Here's your voterID: || "+id+" || \nDo not share it with others!");
                 if (dmSuccess) {
                     event.reply("VoterID generation successful! Check your DMs").queue();
                 }

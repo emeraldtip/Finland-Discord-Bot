@@ -12,26 +12,29 @@ import net.earthmc.emcapiclient.object.identifier.DiscordIdentifier;
 import org.simpleyaml.configuration.Configuration;
 import org.simpleyaml.configuration.file.YamlConfiguration;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.EnumSet;
 
 public class main extends ListenerAdapter {
+
+    public static Configuration configuration;
+    private static EMCAPIClient client = new EMCAPIClient();
 
     public static void main(String[] args)
     {
         new main().init();
     }
 
-    public static Configuration configuration;
     public void init() {
         //config loading
         try {
             configuration = YamlConfiguration.loadConfiguration(new File("config.yml"));
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             System.out.println("Error loading config\n"+e);
             return;
         }
@@ -72,6 +75,64 @@ public class main extends ListenerAdapter {
     }
 
     //different utils ----------------------------------------------------------------------
+
+    //for storing voterIDs in a csv file
+    private boolean storeID(String id, String playerID) {
+        //usernames are more human-readable than UUIDs
+        String username = client.getPlayerDataByString(playerID).getName();
+
+        //read and check if name is already stored
+        try {
+            //csv, because I want human readability
+            BufferedReader reader = new BufferedReader(new FileReader("voterIDs.csv"));
+
+            int lineCounter = 0;
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (lineCounter>1)
+                {
+                    String[] values = line.strip().split("[,]");
+                    if (values[0].equals(username) && values[1].equals(id)) {
+                        System.out.println(username+"'s voterID already exists in table");
+                        return true;
+                    }
+                }
+                lineCounter++;
+            }
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("voterID csv file doesn't exist yet, creating...");
+            try {
+                FileWriter writer = new FileWriter("voterIDs.csv");
+                writer.write("sep=,\n");
+                writer.write("Username,voterID\n");
+                writer.close();
+            }
+            catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //actually writing data into file:
+        try {
+            PrintWriter writer = new PrintWriter(new FileOutputStream(
+                    new File("voterIDs.csv"),
+                    true));
+            writer.append(username+","+id+"\n");
+            writer.close();
+            return true;
+        }
+        catch (FileNotFoundException e) { //again - this should never happen
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    //for generating voterIDs
     private String generateID(String discID, String mcID) {
         String seed = configuration.getString("seed");
         String input  = seed+discID+mcID; //combine all of em together
@@ -114,31 +175,32 @@ public class main extends ListenerAdapter {
 
     private void idCommand(SlashCommandInteractionEvent event) {
         String discID = event.getUser().getId();
-        EMCAPIClient client = new EMCAPIClient();
-
         DiscordIdentifier discData = client.getDiscordIdentifierByString(discID);
         String playerID = discData.getUUID();
+
         if (playerID==null) {
-            /*
+
             event.reply("Your minecraft account is not currently linked to your discord.\n" +
                     "To link your discord account log onto **Aurora** and run the **'/discord link'** command " +
                     "and follow the instructions provided in chat."
             ).queue();
-             */
-            playerID = "61fa89cf-0114-4d1d-9079-fdafecabeaf4";
         }
-        //else {
+        else {
             String id = generateID(discID,playerID);
-
-            boolean dmSuccess = sendDM(event.getUser(),"Here's your voterID: "+id+"\nDo not share it with others!");
-            if (dmSuccess) {
-                event.reply("VoterID generation successful! Check your DMs").queue();
+            boolean writeSuccess = storeID(id,playerID);
+            if (writeSuccess) {
+                boolean dmSuccess = sendDM(event.getUser(),"Here's your voterID: "+id+"\nDo not share it with others!");
+                if (dmSuccess) {
+                    event.reply("VoterID generation successful! Check your DMs").queue();
+                }
+                else {
+                    event.reply("Can't send voterID, please make sure you have the " +
+                            "'Allow direct messages from server members' setting enabled").queue();
+                }
             }
             else {
-                event.reply("Can't send voterID, please make sure you have the " +
-                        "'Allow direct messages from server members' setting enabled").queue();
+                event.reply("Something went wrong with ID generation, please notify Emerald").queue();
             }
-
-        //}
+        }
     }
 }

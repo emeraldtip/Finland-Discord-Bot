@@ -16,14 +16,15 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.EnumSet;
+
 
 public class main extends ListenerAdapter {
 
     public static Configuration configuration;
-    private static EMCAPIClient client = new EMCAPIClient();
+    private final static EMCAPIClient client = new EMCAPIClient();
 
+    @SuppressWarnings("MethodNameSameAsClassName")
     public static void main(String[] args)
     {
         new main().init();
@@ -77,6 +78,7 @@ public class main extends ListenerAdapter {
     //different utils ----------------------------------------------------------------------
 
     //for storing voterIDs in a csv file
+    @SuppressWarnings("StringConcatenationInsideStringBufferAppend")
     private boolean storeID(String id, String playerID) {
         //usernames are more human-readable than UUIDs
         String username = client.getPlayerDataByString(playerID).getName();
@@ -91,7 +93,7 @@ public class main extends ListenerAdapter {
             while ((line = reader.readLine()) != null) {
                 if (lineCounter>1)
                 {
-                    String[] values = line.strip().split("[,]");
+                    String[] values = line.strip().split(",");
                     if (values[0].equals(username) && values[1].equals(id)) {
                         System.out.println(username+"'s voterID already exists in table");
                         return true;
@@ -119,23 +121,21 @@ public class main extends ListenerAdapter {
         //actually writing data into file:
         try {
             PrintWriter writer = new PrintWriter(new FileOutputStream(
-                    new File("voterIDs.csv"),
+                    "voterIDs.csv",
                     true));
             writer.append(username+","+id+"\n");
             writer.close();
             return true;
         }
-        catch (FileNotFoundException e) { //again - this should never happen
-            e.printStackTrace();
-        }
-
+        catch (FileNotFoundException ignored) {} //again - this should never happen
         return false;
     }
 
     //for generating voterIDs
+    @SuppressWarnings("StringConcatenationInLoop")
     private String generateID(String discID, String mcID) {
         String seed = configuration.getString("seed");
-        String input  = seed+discID+mcID; //combine all of em together
+        String input  = seed+discID+mcID; //combine  all of em together
         try {
             //hashing the data
             byte[] hashedData = MessageDigest.getInstance("SHA-256")
@@ -143,14 +143,12 @@ public class main extends ListenerAdapter {
 
             //turning the hashed byte array into a string and returning it
             String output = "";
-            for (int i = 0; i<hashedData.length; i++) {
-                output += Integer.toString( (hashedData[i] & 0xff) + 0x100, 16).substring(1);
+            for (byte hashedByte : hashedData) {
+                output += Integer.toString((hashedByte & 0xff) + 0x100, 16).substring(1);
             }
             return output;
         }
-        catch (NoSuchAlgorithmException e) { //this should never happen
-            e.printStackTrace();
-        }
+        catch (NoSuchAlgorithmException ignored) {} //this should never happen
         return "";
     }
 

@@ -19,9 +19,10 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.EnumSet;
+import java.util.*;
 
 
+@SuppressWarnings("unchecked")
 public class main extends ListenerAdapter {
 
     public static Configuration configuration;
@@ -35,15 +36,7 @@ public class main extends ListenerAdapter {
 
     public void init() {
         //config loading
-        try {
-            String jarLoc = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
-            int lastIndex = jarLoc.lastIndexOf("/")+1; //cause the jarLoc contains the full path to the jar, but we want the folder the jar is in
-            configuration = YamlConfiguration.loadConfiguration(new File(jarLoc.substring(0,lastIndex)+"config.yml"));
-        }
-        catch (IOException e) {
-            System.out.println("Error loading config :3\n"+e);
-            return;
-        }
+        if (!loadConfig()) { return; } //will exit the program if config doesn't load properly
 
         //JDA setup stuff
         EnumSet<GatewayIntent> intents = EnumSet.of(
@@ -59,7 +52,7 @@ public class main extends ListenerAdapter {
                 .addEventListeners(new main())
                 .build();
 
-
+        setServerSetting("a","a","a");
         //Commands here
         CommandListUpdateAction commands = jda.updateCommands();
 
@@ -179,6 +172,45 @@ public class main extends ListenerAdapter {
         return false;
     }
 
+    boolean loadConfig()
+    {
+        try {
+            String jarLoc = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+            int lastIndex = jarLoc.lastIndexOf("/")+1; //cause the jarLoc contains the full path to the jar, but we want the folder the jar is in
+            configuration = YamlConfiguration.loadConfiguration(new File(jarLoc.substring(0,lastIndex)+"config.yml"));
+            return true;
+        }
+        catch (IOException e) {
+            System.out.println("Error loading config :3\n"+e);
+            return false;
+        }
+    }
+
+    HashMap<String, String> getServerSettings(String serverID)
+    {
+        return new HashMap<>();
+    }
+
+    boolean setServerSetting(String serverID, String setting, String value)
+    {
+        Set<String> guilds = configuration.getConfigurationSection("guilds").getKeys(false);
+        Map<String, Object> settings;
+
+        for(String guild : guilds)
+        {
+            if (guild.equals(serverID))
+            {
+                settings = configuration.getConfigurationSection("guilds."+guild).getMapValues(false);
+                settings.put(setting,value);
+                configuration.set("guilds."+guild, settings);
+                return true;
+            }
+        }
+
+        settings = new HashMap<>(){{put(setting,value);}};
+        configuration.set("guilds."+serverID, settings);
+        return true;
+    }
 
     //commands all from here on out --------------------------------------------------------
     private void pingCommand(SlashCommandInteractionEvent event) {
@@ -216,6 +248,7 @@ public class main extends ListenerAdapter {
         }
     }
 
+    @SuppressWarnings("DataFlowIssue")
     private void settingsCommand(SlashCommandInteractionEvent event) {
         System.out.println(event.getCommandString());
         System.out.println(event.getSubcommandGroup());
@@ -225,14 +258,17 @@ public class main extends ListenerAdapter {
                 switch (event.getSubcommandName())
                 {
                     case "channel":
-                        System.out.println("channel");
+                        event.getGuild().getId();
                         break;
                     case "role":
                         System.out.println("role");
                         break;
                 }
                 break;
+            default:
+                event.reply("Not implemented yet").queue();
+                break;
         }
-        event.reply("goofy").queue();
+        event.reply("Look at you, goofy ahh").queue();
     }
 }

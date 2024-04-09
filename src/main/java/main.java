@@ -12,8 +12,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.earthmc.emcapiclient.EMCAPIClient;
 import net.earthmc.emcapiclient.object.identifier.DiscordIdentifier;
-import org.simpleyaml.configuration.Configuration;
-import org.simpleyaml.configuration.file.YamlConfiguration;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -22,10 +21,10 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings("ALL")
 public class main extends ListenerAdapter {
 
-    public static Configuration configuration;
+    public static LinkedHashMap configuration;
     private final static EMCAPIClient client = new EMCAPIClient();
 
     @SuppressWarnings("MethodNameSameAsClassName")
@@ -47,12 +46,11 @@ public class main extends ListenerAdapter {
                 GatewayIntent.DIRECT_MESSAGE_REACTIONS
         );
 
-        JDA jda = JDABuilder.create(configuration.getString("token"), intents)
+        JDA jda = JDABuilder.create((String)configuration.get("token"), intents)
                 .setActivity(Activity.listening("you from within your walls :3"))
                 .addEventListeners(new main())
                 .build();
 
-        setServerSetting("a","a","a");
         //Commands here
         CommandListUpdateAction commands = jda.updateCommands();
 
@@ -62,9 +60,9 @@ public class main extends ListenerAdapter {
                 Commands.slash("settings", "Manage bot settings").addSubcommandGroups(
                         new SubcommandGroupData("voteparty", "Manage voteparty announcement settings").addSubcommands(
                                 new SubcommandData("channel","set the voteparty channel")
-                                        .addOption(OptionType.CHANNEL,"channel","channel", true),
+                                        .addOption(OptionType.CHANNEL,"channel","channel to send the announcements in", true),
                                 new SubcommandData("role","set the role to be notified")
-                                        .addOption(OptionType.ROLE,"role","role", true)
+                                        .addOption(OptionType.ROLE,"role","role to be notified", true)
                         )
                 )
         );
@@ -141,7 +139,7 @@ public class main extends ListenerAdapter {
     //for generating voterIDs
     @SuppressWarnings("StringConcatenationInLoop")
     private String generateID(String discID, String mcID) {
-        String seed = configuration.getString("seed");
+        String seed = (String)configuration.get("seed");
         String input  = seed+discID+mcID; //combine  all of em together
         try {
             //hashing the data
@@ -177,11 +175,30 @@ public class main extends ListenerAdapter {
         try {
             String jarLoc = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
             int lastIndex = jarLoc.lastIndexOf("/")+1; //cause the jarLoc contains the full path to the jar, but we want the folder the jar is in
-            configuration = YamlConfiguration.loadConfiguration(new File(jarLoc.substring(0,lastIndex)+"config.yml"));
+            Yaml yaml = new Yaml();
+            InputStream stream = new FileInputStream(jarLoc.substring(0,lastIndex)+"config.yml");
+            configuration = (LinkedHashMap) yaml.load(stream);
             return true;
         }
         catch (IOException e) {
             System.out.println("Error loading config :3\n"+e);
+            return false;
+        }
+    }
+
+    boolean saveConfig()
+    {
+        try {
+            String jarLoc = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+            int lastIndex = jarLoc.lastIndexOf("/")+1; //cause the jarLoc contains the full path to the jar, but we want the folder the jar is in
+            Yaml yaml = new Yaml();
+            FileWriter writer = new FileWriter(jarLoc.substring(0,lastIndex)+"config.yml");
+            yaml.dump(configuration,writer);
+            writer.close();
+            return true;
+        }
+        catch (IOException e) {
+            System.out.println("Error saving config :3\n"+e);
             return false;
         }
     }
@@ -193,22 +210,28 @@ public class main extends ListenerAdapter {
 
     boolean setServerSetting(String serverID, String setting, String value)
     {
-        Set<String> guilds = configuration.getConfigurationSection("guilds").getKeys(false);
-        Map<String, Object> settings;
+        Map<String,Object> guilds = (Map)configuration.get("guilds");
+        Map<String, String> settings;
 
-        for(String guild : guilds)
+        for(String guild : guilds.keySet())
         {
             if (guild.equals(serverID))
             {
-                settings = configuration.getConfigurationSection("guilds."+guild).getMapValues(false);
+                settings = (Map)guilds.get(serverID);
                 settings.put(setting,value);
-                configuration.set("guilds."+guild, settings);
+                guilds.put(serverID,settings);
+                configuration.put("guilds",guilds);
+
+                saveConfig();
                 return true;
             }
         }
 
         settings = new HashMap<>(){{put(setting,value);}};
-        configuration.set("guilds."+serverID, settings);
+        guilds.put(serverID,settings);
+        configuration.put("guilds",guilds);
+
+        saveConfig();
         return true;
     }
 
@@ -258,10 +281,10 @@ public class main extends ListenerAdapter {
                 switch (event.getSubcommandName())
                 {
                     case "channel":
-                        event.getGuild().getId();
+                        setServerSetting(event.getGuild().getId(),"channel",event.getOption("channel").getAsString());
                         break;
                     case "role":
-                        System.out.println("role");
+                        setServerSetting(event.getGuild().getId(),"role",event.getOption("role").getAsString());
                         break;
                 }
                 break;

@@ -18,7 +18,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     implementation("net.dv8tion:JDA:5.0.0-beta.21")
-    implementation("com.github.Carleslc.Simple-YAML:Simple-Yaml:1.8.4")
+    implementation("org.yaml:snakeyaml:1.8")
     implementation("ch.qos.logback:logback-classic:1.2.8")
     implementation("com.github.Fruitloopins:EMCAPIClient:1ab9702b34699816157c00759bbf55c84ca527b7")
 }

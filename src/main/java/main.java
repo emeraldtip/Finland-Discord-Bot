@@ -4,7 +4,10 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.earthmc.emcapiclient.EMCAPIClient;
@@ -13,7 +16,6 @@ import org.simpleyaml.configuration.Configuration;
 import org.simpleyaml.configuration.file.YamlConfiguration;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -63,7 +65,15 @@ public class main extends ListenerAdapter {
 
         commands.addCommands(
                 Commands.slash("ping", "Fragmentation is a multistage process."),
-                Commands.slash("voterid","Get your voterID for the currently ongoing elections")
+                Commands.slash("voterid","Get your voterID for the currently ongoing elections"),
+                Commands.slash("settings", "Manage bot settings").addSubcommandGroups(
+                        new SubcommandGroupData("voteparty", "Manage voteparty announcement settings").addSubcommands(
+                                new SubcommandData("channel","set the voteparty channel")
+                                        .addOption(OptionType.CHANNEL,"channel","channel", true),
+                                new SubcommandData("role","set the role to be notified")
+                                        .addOption(OptionType.ROLE,"role","role", true)
+                        )
+                )
         );
 
         commands.queue();
@@ -74,6 +84,7 @@ public class main extends ListenerAdapter {
         switch (event.getName()) {
             case "ping" -> pingCommand(event);
             case "voterid" -> idCommand(event);
+            case "settings" -> settingsCommand(event);
             default -> event.reply("This command is still in development...").queue();
         }
     }
@@ -203,5 +214,25 @@ public class main extends ListenerAdapter {
                 event.reply("Something went wrong with ID generation, please notify Emerald").queue();
             }
         }
+    }
+
+    private void settingsCommand(SlashCommandInteractionEvent event) {
+        System.out.println(event.getCommandString());
+        System.out.println(event.getSubcommandGroup());
+        switch (event.getSubcommandGroup())
+        {
+            case "voteparty":
+                switch (event.getSubcommandName())
+                {
+                    case "channel":
+                        System.out.println("channel");
+                        break;
+                    case "role":
+                        System.out.println("role");
+                        break;
+                }
+                break;
+        }
+        event.reply("goofy").queue();
     }
 }

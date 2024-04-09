@@ -13,6 +13,7 @@ import org.simpleyaml.configuration.Configuration;
 import org.simpleyaml.configuration.file.YamlConfiguration;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -33,10 +34,12 @@ public class main extends ListenerAdapter {
     public void init() {
         //config loading
         try {
-            configuration = YamlConfiguration.loadConfiguration(new File("config.yml"));
+            String jarLoc = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+            int lastIndex = jarLoc.lastIndexOf("/")+1; //cause the jarLoc contains the full path to the jar, but we want the folder the jar is in
+            configuration = YamlConfiguration.loadConfiguration(new File(jarLoc.substring(0,lastIndex)+"config.yml"));
         }
         catch (IOException e) {
-            System.out.println("Error loading config\n"+e);
+            System.out.println("Error loading config :3\n"+e);
             return;
         }
 
@@ -50,7 +53,7 @@ public class main extends ListenerAdapter {
         );
 
         JDA jda = JDABuilder.create(configuration.getString("token"), intents)
-                .setActivity(Activity.listening("you from within your walls"))
+                .setActivity(Activity.listening("you from within your walls :3"))
                 .addEventListeners(new main())
                 .build();
 

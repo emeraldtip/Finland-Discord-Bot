@@ -27,11 +27,13 @@ public class main extends ListenerAdapter {
     public static LinkedHashMap configuration;
     private final static EMCAPIClient client = new EMCAPIClient();
 
+
     @SuppressWarnings("MethodNameSameAsClassName")
     public static void main(String[] args)
     {
         new main().init();
     }
+
 
     public void init() {
         //config loading
@@ -70,6 +72,7 @@ public class main extends ListenerAdapter {
         commands.queue();
     }
 
+
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         switch (event.getName()) {
@@ -81,6 +84,7 @@ public class main extends ListenerAdapter {
     }
 
     //different utils ----------------------------------------------------------------------
+
 
     //for storing voterIDs in a csv file
     @SuppressWarnings("StringConcatenationInsideStringBufferAppend")
@@ -136,6 +140,7 @@ public class main extends ListenerAdapter {
         return false;
     }
 
+
     //for generating voterIDs
     @SuppressWarnings("StringConcatenationInLoop")
     private String generateID(String discID, String mcID) {
@@ -157,6 +162,7 @@ public class main extends ListenerAdapter {
         return "";
     }
 
+
     private boolean sendDM(User user, String content) {
         try {
             user.openPrivateChannel()
@@ -169,6 +175,7 @@ public class main extends ListenerAdapter {
         }
         return false;
     }
+
 
     boolean loadConfig() {
         try {
@@ -184,6 +191,7 @@ public class main extends ListenerAdapter {
             return false;
         }
     }
+
 
     boolean saveConfig() {
         try {
@@ -201,6 +209,7 @@ public class main extends ListenerAdapter {
         }
     }
 
+
     HashMap<String, String> getServerSettings(String serverID) {
         Map<String,Object> guilds = (Map<String,Object>)configuration.get("guilds");
         Map<String, String> settings;
@@ -212,6 +221,7 @@ public class main extends ListenerAdapter {
         }
         return new HashMap<>();
     }
+
 
     boolean setServerSetting(String serverID, String setting, String value) {
         Map<String,Object> guilds = (Map<String,Object>)configuration.get("guilds");
@@ -237,10 +247,12 @@ public class main extends ListenerAdapter {
         return true;
     }
 
+
     //commands all from here on out --------------------------------------------------------
     private void pingCommand(SlashCommandInteractionEvent event) {
         event.reply("pong").setEphemeral(true).queue();
     }
+
 
     private void idCommand(SlashCommandInteractionEvent event) {
         String discID = event.getUser().getId();
@@ -248,7 +260,6 @@ public class main extends ListenerAdapter {
         String playerID = discData.getUUID();
 
         if (playerID==null) {
-
             event.reply("Your minecraft account is not currently linked to your discord.\n" +
                     "To link your discord account log onto **Aurora** and run the '**/discord link**' command " +
                     "and follow the instructions provided in chat."
@@ -272,6 +283,7 @@ public class main extends ListenerAdapter {
             }
         }
     }
+
 
     @SuppressWarnings("DataFlowIssue")
     private void settingsCommand(SlashCommandInteractionEvent event) {

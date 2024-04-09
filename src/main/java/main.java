@@ -21,7 +21,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 
-@SuppressWarnings("ALL")
+@SuppressWarnings("unchecked")
 public class main extends ListenerAdapter {
 
     public static LinkedHashMap configuration;
@@ -170,8 +170,7 @@ public class main extends ListenerAdapter {
         return false;
     }
 
-    boolean loadConfig()
-    {
+    boolean loadConfig() {
         try {
             String jarLoc = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
             int lastIndex = jarLoc.lastIndexOf("/")+1; //cause the jarLoc contains the full path to the jar, but we want the folder the jar is in
@@ -186,8 +185,7 @@ public class main extends ListenerAdapter {
         }
     }
 
-    boolean saveConfig()
-    {
+    boolean saveConfig() {
         try {
             String jarLoc = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
             int lastIndex = jarLoc.lastIndexOf("/")+1; //cause the jarLoc contains the full path to the jar, but we want the folder the jar is in
@@ -203,20 +201,24 @@ public class main extends ListenerAdapter {
         }
     }
 
-    HashMap<String, String> getServerSettings(String serverID)
-    {
+    HashMap<String, String> getServerSettings(String serverID) {
+        Map<String,Object> guilds = (Map<String,Object>)configuration.get("guilds");
+        Map<String, String> settings;
+
+        for(String guild : guilds.keySet()) {
+            if (guild.equals(serverID)) {
+                return (HashMap<String,String>) guilds.get(serverID);
+            }
+        }
         return new HashMap<>();
     }
 
-    boolean setServerSetting(String serverID, String setting, String value)
-    {
-        Map<String,Object> guilds = (Map)configuration.get("guilds");
+    boolean setServerSetting(String serverID, String setting, String value) {
+        Map<String,Object> guilds = (Map<String,Object>)configuration.get("guilds");
         Map<String, String> settings;
 
-        for(String guild : guilds.keySet())
-        {
-            if (guild.equals(serverID))
-            {
+        for(String guild : guilds.keySet()) {
+            if (guild.equals(serverID)) {
                 settings = (Map)guilds.get(serverID);
                 settings.put(setting,value);
                 guilds.put(serverID,settings);
@@ -275,16 +277,24 @@ public class main extends ListenerAdapter {
     private void settingsCommand(SlashCommandInteractionEvent event) {
         System.out.println(event.getCommandString());
         System.out.println(event.getSubcommandGroup());
-        switch (event.getSubcommandGroup())
-        {
+        switch (event.getSubcommandGroup()) {
             case "voteparty":
-                switch (event.getSubcommandName())
-                {
+                switch (event.getSubcommandName()) {
                     case "channel":
-                        setServerSetting(event.getGuild().getId(),"channel",event.getOption("channel").getAsString());
+                        if (setServerSetting(event.getGuild().getId(),"channel",event.getOption("channel").getAsString())) {
+                            event.reply("Setting updated successfully!");
+                        }
+                        else {
+                            event.reply("Updating setting failed!");
+                        }
                         break;
                     case "role":
-                        setServerSetting(event.getGuild().getId(),"role",event.getOption("role").getAsString());
+                        if (setServerSetting(event.getGuild().getId(),"role",event.getOption("role").getAsString())) {
+                            event.reply("Setting updated successfully!");
+                        }
+                        else {
+                            event.reply("Updating setting failed!");
+                        }
                         break;
                 }
                 break;

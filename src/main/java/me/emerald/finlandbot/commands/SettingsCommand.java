@@ -4,21 +4,43 @@ import me.emerald.finlandbot.utils.ConfigUtils;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 public class SettingsCommand {
+
     @SuppressWarnings("DataFlowIssue")
     public void settingsCommand(SlashCommandInteractionEvent event) {
         System.out.println(event.getCommandString());
         System.out.println(event.getSubcommandGroup());
 
         boolean success = false;
+        String guildID = event.getGuild().getId();
         switch (event.getSubcommandGroup()) {
             case "voteparty":
                 switch (event.getSubcommandName()) {
-                    case "channel" ->
-                            success = ConfigUtils.setServerSetting(event.getGuild().getId(), "channel", event.getOption("channel").getAsString());
-                    case "role" ->
-                            success = ConfigUtils.setServerSetting(event.getGuild().getId(), "role", event.getOption("role").getAsString());
-                    default ->
-                            event.reply("Not implemented yet").queue();
+                    case "channel":
+                        success = ConfigUtils.setServerSetting(guildID, "channel", event.getOption("channel").getAsString());
+                        break;
+                    case "role":
+                        success = ConfigUtils.setServerSetting(guildID, "role", event.getOption("role").getAsString());
+                        break;
+                    case "enable":
+                        if (!ConfigUtils.getServerSettings(guildID).containsKey("channel"))
+                        {
+                            event.reply("You do not have the voteparty alerts channel set").queue();
+                            return;
+                        }
+                        if(!ConfigUtils.getServerSettings(guildID).containsKey("role"))
+                        {
+                            event.reply("You do not have the voteparty alerted role set").queue();
+                            return;
+                        }
+
+                        success = ConfigUtils.setServerSetting(guildID,"enabled","true");
+                        break;
+                    case "disable":
+                        success = ConfigUtils.setServerSetting(guildID,"enabled","false");
+                        break;
+                    default:
+                        event.reply("Not implemented yet").queue();
+                        break;
                 }
                 break;
             default:

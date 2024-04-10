@@ -19,7 +19,6 @@ import net.earthmc.emcapiclient.EMCAPIClient;
 
 import java.util.*;
 
-
 public class Main extends ListenerAdapter {
 
     public static String jarLoc;
@@ -66,7 +65,9 @@ public class Main extends ListenerAdapter {
                                 new SubcommandData("channel","set the voteparty channel")
                                         .addOption(OptionType.CHANNEL,"channel","channel to send the announcements in", true),
                                 new SubcommandData("role","set the role to be notified")
-                                        .addOption(OptionType.ROLE,"role","role to be notified", true)
+                                        .addOption(OptionType.ROLE,"role","role to be notified", true),
+                                new SubcommandData("enable","Enable the sending of notifications"),
+                                new SubcommandData("disable","Disable the sending of notifications")
                         )
                 )
         );
@@ -84,6 +85,7 @@ public class Main extends ListenerAdapter {
             default -> event.reply("This command is still in development...").queue();
         }
     }
+
 
     //the simplest utils ----------------------------------------------------------------------
 

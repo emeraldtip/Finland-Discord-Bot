@@ -1,6 +1,7 @@
 package me.emerald.finlandbot.commands;
 
 import me.emerald.finlandbot.utils.ConfigUtils;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 public class SettingsCommand {
@@ -16,7 +17,12 @@ public class SettingsCommand {
             case "voteparty":
                 switch (event.getSubcommandName()) {
                     case "channel":
-                        success = ConfigUtils.setServerSetting(guildID, "channel", event.getOption("channel").getAsString());
+                        if (event.getOption("channel").getAsChannel().getType().equals(ChannelType.TEXT)) { //only text channels allowed
+                            success = ConfigUtils.setServerSetting(guildID, "channel", event.getOption("channel").getAsString());
+                        }
+                        else {
+                            event.reply("Please select a text channel").queue();
+                        }
                         break;
                     case "role":
                         success = ConfigUtils.setServerSetting(guildID, "role", event.getOption("role").getAsString());

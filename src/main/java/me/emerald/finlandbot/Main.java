@@ -23,7 +23,13 @@ public class Main extends ListenerAdapter {
 
     public static String jarLoc;
     public static LinkedHashMap<String,Object> configuration;
+
     public final static EMCAPIClient client = new EMCAPIClient();
+    public static JDA bot;
+
+    public static Timer timer = new Timer();
+    public static TimerTask votePartyChecker;
+
 
 
     public static void main(String[] args)
@@ -49,13 +55,14 @@ public class Main extends ListenerAdapter {
                 GatewayIntent.DIRECT_MESSAGE_REACTIONS
         );
 
-        JDA jda = JDABuilder.create((String)configuration.get("token"), intents)
+        bot = JDABuilder.create((String)configuration.get("token"), intents)
                 .setActivity(Activity.listening("you from within your walls :3"))
                 .addEventListeners(new Main())
                 .build();
 
+
         //Commands here
-        CommandListUpdateAction commands = jda.updateCommands();
+        CommandListUpdateAction commands = bot.updateCommands();
 
         commands.addCommands(
                 Commands.slash("ping", "Fragmentation is a multistage process."),
@@ -73,6 +80,14 @@ public class Main extends ListenerAdapter {
         );
 
         commands.queue();
+
+        votePartyChecker = new TimerTask(){
+            public void run(){
+                checkVoteParty();
+            }
+        };
+
+        timer.schedule(votePartyChecker, 5000L);
     }
 
 
@@ -100,6 +115,42 @@ public class Main extends ListenerAdapter {
             System.out.println(e.getMessage());
         }
         return false;
+    }
+
+    private static boolean fiftyRan = false;
+    private static boolean tenRan = false;
+    public static void checkVoteParty() {
+        int remaining = client.getServerData().getNumVotesRemaining();
+        if (remaining<50 && !fiftyRan) {
+            for (String s :ConfigUtils.getServers()) {
+                HashMap<String,String> settings = ConfigUtils.getServerSettings(s);
+                if (settings.containsKey("enabled")) {
+                    if (settings.get("enabled").equals("true")) {
+                        bot.getGuildById(s)
+                                .getTextChannelById(settings.get("channel"))
+                                .sendMessage("VoteParty is happening in 50 votes <@"+settings.get("role")+">")
+                                .queue();
+                    }
+                }
+            }
+            fiftyRan = true;
+            tenRan = false;
+        }
+        if (remaining<10 && !tenRan) {
+            for (String s :ConfigUtils.getServers()) {
+                HashMap<String,String> settings = ConfigUtils.getServerSettings(s);
+                if (settings.containsKey("enabled")) {
+                    if (settings.get("enabled").equals("true")) { //enabled shouldn't be true if other settings are not set
+                        bot.getGuildById(s)
+                                .getTextChannelById(settings.get("channel"))
+                                .sendMessage("VoteParty is happening in 10 votes <@"+settings.get("role")+">, get yo ass on")
+                                .queue();
+                    }
+                }
+            }
+            fiftyRan = false;
+            tenRan = true;
+        }
     }
 
 

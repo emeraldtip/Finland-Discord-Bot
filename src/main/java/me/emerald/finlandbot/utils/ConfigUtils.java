@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 
 @SuppressWarnings("unchecked")
@@ -39,6 +40,13 @@ public class ConfigUtils {
             System.out.println("Error saving config :3\n"+e);
             return false;
         }
+    }
+
+
+    public static Set<String> getServers()
+    {
+        Map<String,Object> guilds = (Map<String,Object>)Main.configuration.get("guilds");
+        return guilds.keySet();
     }
 
 

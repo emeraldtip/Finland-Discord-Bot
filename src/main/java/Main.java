@@ -22,16 +22,15 @@ import java.util.*;
 
 
 @SuppressWarnings("unchecked")
-public class main extends ListenerAdapter {
+public class Main extends ListenerAdapter {
 
     public static LinkedHashMap configuration;
     private final static EMCAPIClient client = new EMCAPIClient();
 
 
-    @SuppressWarnings("MethodNameSameAsClassName")
     public static void main(String[] args)
     {
-        new main().init();
+        new Main().init();
     }
 
 
@@ -50,7 +49,7 @@ public class main extends ListenerAdapter {
 
         JDA jda = JDABuilder.create((String)configuration.get("token"), intents)
                 .setActivity(Activity.listening("you from within your walls :3"))
-                .addEventListeners(new main())
+                .addEventListeners(new Main())
                 .build();
 
         //Commands here
@@ -183,7 +182,7 @@ public class main extends ListenerAdapter {
             int lastIndex = jarLoc.lastIndexOf("/")+1; //cause the jarLoc contains the full path to the jar, but we want the folder the jar is in
             Yaml yaml = new Yaml();
             InputStream stream = new FileInputStream(jarLoc.substring(0,lastIndex)+"config.yml");
-            configuration = (LinkedHashMap) yaml.load(stream);
+            configuration = yaml.load(stream);
             return true;
         }
         catch (IOException e) {
@@ -212,7 +211,6 @@ public class main extends ListenerAdapter {
 
     HashMap<String, String> getServerSettings(String serverID) {
         Map<String,Object> guilds = (Map<String,Object>)configuration.get("guilds");
-        Map<String, String> settings;
 
         for(String guild : guilds.keySet()) {
             if (guild.equals(serverID)) {
@@ -229,13 +227,12 @@ public class main extends ListenerAdapter {
 
         for(String guild : guilds.keySet()) {
             if (guild.equals(serverID)) {
-                settings = (Map)guilds.get(serverID);
+                settings = (Map<String,String>)guilds.get(serverID);
                 settings.put(setting,value);
                 guilds.put(serverID,settings);
                 configuration.put("guilds",guilds);
 
-                saveConfig();
-                return true;
+                return saveConfig();
             }
         }
 
@@ -243,8 +240,7 @@ public class main extends ListenerAdapter {
         guilds.put(serverID,settings);
         configuration.put("guilds",guilds);
 
-        saveConfig();
-        return true;
+        return saveConfig();
     }
 
 
@@ -289,31 +285,29 @@ public class main extends ListenerAdapter {
     private void settingsCommand(SlashCommandInteractionEvent event) {
         System.out.println(event.getCommandString());
         System.out.println(event.getSubcommandGroup());
+
+        boolean success = false;
         switch (event.getSubcommandGroup()) {
             case "voteparty":
                 switch (event.getSubcommandName()) {
-                    case "channel":
-                        if (setServerSetting(event.getGuild().getId(),"channel",event.getOption("channel").getAsString())) {
-                            event.reply("Setting updated successfully!");
-                        }
-                        else {
-                            event.reply("Updating setting failed!");
-                        }
-                        break;
-                    case "role":
-                        if (setServerSetting(event.getGuild().getId(),"role",event.getOption("role").getAsString())) {
-                            event.reply("Setting updated successfully!");
-                        }
-                        else {
-                            event.reply("Updating setting failed!");
-                        }
-                        break;
+                    case "channel" ->
+                            success = setServerSetting(event.getGuild().getId(), "channel", event.getOption("channel").getAsString());
+                    case "role" ->
+                            success = setServerSetting(event.getGuild().getId(), "role", event.getOption("role").getAsString());
+                    default ->
+                            event.reply("Not implemented yet").queue();
                 }
                 break;
             default:
                 event.reply("Not implemented yet").queue();
                 break;
         }
-        event.reply("Look at you, goofy ahh").queue();
+
+        if (success) {
+            event.reply("Setting updated successfully!").queue();
+        }
+        else {
+            event.reply("Updating setting failed!").queue();
+        }
     }
 }

@@ -32,7 +32,7 @@ tasks {
         archiveBaseName.set("FinlandBot")
         mergeServiceFiles()
         manifest {
-            attributes(mapOf("Main-Class" to "main"))
+            attributes(mapOf("Main-Class" to "Main"))
         }
     }
 }

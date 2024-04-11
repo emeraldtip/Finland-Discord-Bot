@@ -11,7 +11,6 @@ version = "0.0.28" //Somehow should get this thing to update with the commit num
 repositories {
     mavenCentral()
     maven("https://jitpack.io")
-
 }
 
 dependencies {

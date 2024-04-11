@@ -28,13 +28,11 @@ public class SettingsCommand {
                         success = ConfigUtils.setServerSetting(guildID, "role", event.getOption("role").getAsString());
                         break;
                     case "enable":
-                        if (!ConfigUtils.getServerSettings(guildID).containsKey("channel"))
-                        {
+                        if (!ConfigUtils.getServerSettings(guildID).containsKey("channel")) {
                             event.reply("You do not have the voteparty alerts channel set").queue();
                             return;
                         }
-                        if(!ConfigUtils.getServerSettings(guildID).containsKey("role"))
-                        {
+                        if(!ConfigUtils.getServerSettings(guildID).containsKey("role")) {
                             event.reply("You do not have the voteparty alerted role set").queue();
                             return;
                         }

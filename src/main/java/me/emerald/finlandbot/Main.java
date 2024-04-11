@@ -151,8 +151,7 @@ public class Main extends ListenerAdapter {
         if (remaining<10) {
             tenRan = true;
         }
-        if (remaining>100)
-        {
+        if (remaining>100) {
             fiftyRan = false;
             tenRan = false;
         }
@@ -196,8 +195,7 @@ public class Main extends ListenerAdapter {
                 );
 
                 //owner-only commands
-                if (g.getId().equals("406810397018947596"))
-                {
+                if (g.getId().equals("406810397018947596")) {
                     commands.addCommands(
                             Commands.slash("restart","Restart the bot")
                                     .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
@@ -218,8 +216,7 @@ public class Main extends ListenerAdapter {
     }
 
 
-    private void shutDownCommand(SlashCommandInteractionEvent event)
-    {
+    private void shutDownCommand(SlashCommandInteractionEvent event) {
         event.reply("Shutting down...").setEphemeral(true).queue();
         bot.shutdown();
         timer.schedule(new TimerTask(){

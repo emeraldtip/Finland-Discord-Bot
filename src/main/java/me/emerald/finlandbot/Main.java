@@ -5,10 +5,16 @@ import me.emerald.finlandbot.commands.SettingsCommand;
 import me.emerald.finlandbot.utils.ConfigUtils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.Command;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
@@ -28,9 +34,6 @@ public class Main extends ListenerAdapter {
     public static JDA bot;
 
     public static Timer timer = new Timer();
-    public static TimerTask votePartyChecker;
-
-
 
     public static void main(String[] args)
     {
@@ -38,6 +41,7 @@ public class Main extends ListenerAdapter {
     }
 
 
+    @SuppressWarnings("DataFlowIssue")
     public void init() {
         String jarPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
         //cause the jarPath contains the full path to the jar, but we want the folder the jar is in
@@ -60,34 +64,31 @@ public class Main extends ListenerAdapter {
                 .addEventListeners(new Main())
                 .build();
 
+        //wait for the bot to load in
+        timer.schedule(new TimerTask(){
+            public void run(){
+                //owner-only commands
+                System.out.println("Current guilds: "+bot.getGuilds().toString());
+                CommandListUpdateAction commands = bot.getGuildById("406810397018947596").updateCommands();
 
-        //Commands here
-        CommandListUpdateAction commands = bot.updateCommands();
+                commands.addCommands(
+                        Commands.slash("restart","Restart the bot")
+                                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
+                        Commands.slash("stop","Stops the bot")
+                                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
+                        Commands.slash("updatecommands","Updates slash commands of the bot")
+                                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
+                );
+                commands.queue();
+            }
+        },5000);
 
-        commands.addCommands(
-                Commands.slash("ping", "Fragmentation is a multistage process."),
-                Commands.slash("voterid","Get your voterID for the currently ongoing elections"),
-                Commands.slash("settings", "Manage bot settings").addSubcommandGroups(
-                        new SubcommandGroupData("voteparty", "Manage voteparty announcement settings").addSubcommands(
-                                new SubcommandData("channel","set the voteparty channel")
-                                        .addOption(OptionType.CHANNEL,"channel","channel to send the announcements in", true),
-                                new SubcommandData("role","set the role to be notified")
-                                        .addOption(OptionType.ROLE,"role","role to be notified", true),
-                                new SubcommandData("enable","Enable the sending of notifications"),
-                                new SubcommandData("disable","Disable the sending of notifications")
-                        )
-                )
-        );
 
-        commands.queue();
-
-        votePartyChecker = new TimerTask(){
+        timer.scheduleAtFixedRate(new TimerTask(){
             public void run(){
                 checkVoteParty();
             }
-        };
-
-        timer.schedule(votePartyChecker, 5000L);
+        },0,5000);
     }
 
 
@@ -97,6 +98,7 @@ public class Main extends ListenerAdapter {
             case "ping" -> pingCommand(event);
             case "voterid" -> new IDCommand().idCommand(event);
             case "settings" -> new SettingsCommand().settingsCommand(event);
+            case "updatecommands" -> updateCommands(event);
             default -> event.reply("This command is still in development...").queue();
         }
     }
@@ -117,39 +119,90 @@ public class Main extends ListenerAdapter {
         return false;
     }
 
+
+    @SuppressWarnings("unchecked")
+    public static void updateCommands(SlashCommandInteractionEvent event) {
+        if (event.getUser().getId().equals("258934231345004544")) { //verify, it's the owner running the command
+            //remove all commands the bot has
+            for (Command c: (List<Command>) bot.retrieveCommands()) {
+                c.delete();
+            }
+
+            //add global commands
+            CommandListUpdateAction commands = bot.updateCommands();
+
+            commands.addCommands(
+                    Commands.slash("ping", "Fragmentation is a multistage process.")
+                            .setDefaultPermissions(DefaultMemberPermissions.ENABLED),
+                    Commands.slash("voterid","Get your voterID for the currently ongoing elections")
+                            .setDefaultPermissions(DefaultMemberPermissions.ENABLED)
+            );
+            commands.queue();
+
+            //add guild-only commands
+            for (Guild g : bot.getGuilds()) {
+                commands = g.updateCommands();
+                commands.addCommands(
+                        Commands.slash("settings", "Manage bot settings").addSubcommandGroups(
+                                        new SubcommandGroupData("voteparty", "Manage voteparty announcement settings").addSubcommands(
+                                                new SubcommandData("channel", "set the voteparty channel")
+                                                        .addOption(OptionType.CHANNEL, "channel", "channel to send the announcements in", true),
+                                                new SubcommandData("role", "set the role to be notified")
+                                                        .addOption(OptionType.ROLE, "role", "role to be notified", true),
+                                                new SubcommandData("enable", "Enable the sending of notifications"),
+                                                new SubcommandData("disable", "Disable the sending of notifications"),
+                                                new SubcommandData("number", "aa")
+                                                        .addOption(OptionType.NUMBER, "number", "num")
+                                        )
+                                )
+                                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
+                );
+                commands.queue();
+            }
+            event.reply("Successfully updated commands!").setEphemeral(true).queue();
+        }
+        else {
+            event.reply("You do not have permissions to run this command!").setEphemeral(true).queue();
+        }
+    }
+
+
     private static boolean fiftyRan = false;
     private static boolean tenRan = false;
     public static void checkVoteParty() {
         int remaining = client.getServerData().getNumVotesRemaining();
-        if (remaining<50 && !fiftyRan) {
-            for (String s :ConfigUtils.getServers()) {
-                HashMap<String,String> settings = ConfigUtils.getServerSettings(s);
-                if (settings.containsKey("enabled")) {
-                    if (settings.get("enabled").equals("true")) {
-                        bot.getGuildById(s)
-                                .getTextChannelById(settings.get("channel"))
-                                .sendMessage("VoteParty is happening in 50 votes <@"+settings.get("role")+">")
-                                .queue();
-                    }
-                }
-            }
-            fiftyRan = true;
-            tenRan = false;
-        }
-        if (remaining<10 && !tenRan) {
+        //System.out.println("checking "+ remaining);
+        if ((remaining<50 && !fiftyRan) || (remaining<10 && !tenRan)) {
             for (String s :ConfigUtils.getServers()) {
                 HashMap<String,String> settings = ConfigUtils.getServerSettings(s);
                 if (settings.containsKey("enabled")) {
                     if (settings.get("enabled").equals("true")) { //enabled shouldn't be true if other settings are not set
-                        bot.getGuildById(s)
-                                .getTextChannelById(settings.get("channel"))
-                                .sendMessage("VoteParty is happening in 10 votes <@"+settings.get("role")+">, get yo ass on")
-                                .queue();
+                        Guild guild = bot.getGuildById(s);
+                        if (guild!=null) {
+                            TextChannel channel = guild.getTextChannelById(settings.get("channel"));
+                            if (channel!=null){
+                                Role role = guild.getRoleById(settings.get("role"));
+                                if (role!=null)
+                                {
+                                    channel.sendMessage("VoteParty is happening in "+remaining +" votes "+ role.getAsMention() +" get yo ass on")
+                                            .queue();
+                                }
+                            }
+                        }
                     }
                 }
             }
-            fiftyRan = false;
+        }
+        if (remaining<50) {
+            fiftyRan=true;
+        }
+        if (remaining<10) {
             tenRan = true;
+        }
+        if (remaining>100)
+        {
+            fiftyRan = false;
+            tenRan = false;
         }
     }
 

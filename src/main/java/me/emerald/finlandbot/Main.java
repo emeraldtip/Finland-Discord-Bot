@@ -21,7 +21,11 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.earthmc.emcapiclient.EMCAPIClient;
+import org.apache.commons.io.FilenameUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.*;
 
 public class Main extends ListenerAdapter {
@@ -80,7 +84,7 @@ public class Main extends ListenerAdapter {
                 );
                 commands.queue();
             }
-        },5000);
+        },2000);
 
 
         timer.scheduleAtFixedRate(new TimerTask(){
@@ -96,8 +100,9 @@ public class Main extends ListenerAdapter {
             case "ping" -> pingCommand(event);
             case "voterid" -> new IDCommand().idCommand(event);
             case "settings" -> new SettingsCommand().settingsCommand(event);
-            case "updatecommands" -> updateCommands(event);
+            case "updatecommands" -> updateCommandsCommand(event);
             case "stop" -> shutDownCommand(event);
+            case "restart" -> restartCommand(event);
             default -> event.reply("This command is still in development...").queue();
         }
     }
@@ -164,7 +169,7 @@ public class Main extends ListenerAdapter {
     }
 
 
-    public static void updateCommands(SlashCommandInteractionEvent event) {
+    public static void updateCommandsCommand(SlashCommandInteractionEvent event) {
         if (event.getUser().getId().equals("258934231345004544")) { //verify, it's the owner running the command
             //add global commands
             CommandListUpdateAction commands = bot.updateCommands();
@@ -223,6 +228,31 @@ public class Main extends ListenerAdapter {
             public void run(){
                 System.exit(0);
             }
-        },5000);
+        },2000);
+    }
+
+
+    private void restartCommand(SlashCommandInteractionEvent event) {
+        event.reply("Restarting...").setEphemeral(true).queue();
+        bot.shutdown();
+        timer.schedule(new TimerTask(){
+            public void run(){
+                String currJar = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+
+                //TODO remove this, as the final version of the bot will be running on linux
+                if (System.getProperty("os.name").contains("Windows"))
+                {
+                    //Java adds a slash in front of the filepath on Windows and the command won't work with the slash (or backslash) as the first character
+                    currJar = currJar.substring(1);
+                }
+                ProcessBuilder builder = new ProcessBuilder("java", "-jar", FilenameUtils.separatorsToSystem(currJar));
+                try {
+                    builder.start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                System.exit(0);
+            }
+        },2000);
     }
 }

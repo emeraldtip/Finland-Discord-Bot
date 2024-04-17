@@ -23,9 +23,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.earthmc.emcapiclient.EMCAPIClient;
 import org.apache.commons.io.FilenameUtils;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.util.*;
 
 public class Main extends ListenerAdapter {

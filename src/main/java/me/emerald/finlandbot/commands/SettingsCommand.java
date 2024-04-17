@@ -1,6 +1,5 @@
 package me.emerald.finlandbot.commands;
 
-import me.emerald.finlandbot.Main;
 import me.emerald.finlandbot.utils.ConfigUtils;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;

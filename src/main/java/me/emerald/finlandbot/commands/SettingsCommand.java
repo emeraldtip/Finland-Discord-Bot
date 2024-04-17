@@ -19,31 +19,31 @@ public class SettingsCommand {
                 switch (event.getSubcommandName()) {
                     case "channel":
                         if (event.getOption("channel").getAsChannel().getType().equals(ChannelType.TEXT)) { //only text channels allowed
-                            success = ConfigUtils.setServerSetting(guildID, "channel", event.getOption("channel").getAsString());
+                            success = ConfigUtils.setServerSetting(guildID, "vpchannel", event.getOption("channel").getAsString());
                         }
                         else {
                             event.reply("Please select a text channel").queue();
                         }
                         break;
                     case "role":
-                        success = ConfigUtils.setServerSetting(guildID, "role", event.getOption("role").getAsString());
+                        success = ConfigUtils.setServerSetting(guildID, "vprole", event.getOption("role").getAsString());
                         break;
                     case "enable":
-                        if (!ConfigUtils.getServerSettings(guildID).containsKey("channel"))
+                        if (!ConfigUtils.getServerSettings(guildID).containsKey("vpchannel"))
                         {
                             event.reply("You do not have the voteparty alerts channel set").queue();
                             return;
                         }
-                        if(!ConfigUtils.getServerSettings(guildID).containsKey("role"))
+                        if(!ConfigUtils.getServerSettings(guildID).containsKey("vprole"))
                         {
                             event.reply("You do not have the voteparty alerted role set").queue();
                             return;
                         }
 
-                        success = ConfigUtils.setServerSetting(guildID,"enabled","true");
+                        success = ConfigUtils.setServerSetting(guildID,"vpenabled","true");
                         break;
                     case "disable":
-                        success = ConfigUtils.setServerSetting(guildID,"enabled","false");
+                        success = ConfigUtils.setServerSetting(guildID,"vpenabled","false");
                         break;
                     default:
                         event.reply("Not implemented yet").queue();

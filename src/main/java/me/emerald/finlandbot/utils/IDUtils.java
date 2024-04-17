@@ -67,7 +67,7 @@ public class IDUtils {
     @SuppressWarnings("StringConcatenationInLoop")
     public static String generateID(String discID, String mcID) {
         String seed = (String)Main.configuration.get("seed");
-        String input  = seed+discID+mcID; //combine  all of em together
+        String input  = seed+discID+mcID; //combine all of em together
         try {
             //hashing the data
             byte[] hashedData = MessageDigest.getInstance("SHA-256")

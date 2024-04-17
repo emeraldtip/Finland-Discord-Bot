@@ -6,12 +6,11 @@ plugins {
 }
 
 group = "me.emerald"
-version = "0.0.1"
+version = "0.0.32" //Somehow should get this thing to update with the commit number
 
 repositories {
     mavenCentral()
     maven("https://jitpack.io")
-
 }
 
 dependencies {
@@ -21,6 +20,7 @@ dependencies {
     implementation("org.yaml:snakeyaml:2.2")
     implementation("ch.qos.logback:logback-classic:1.5.3")
     implementation("com.github.Fruitloopins:EMCAPIClient:1ab9702b34699816157c00759bbf55c84ca527b7")
+    implementation("commons-io:commons-io:2.16.1")
 }
 
 tasks.getByName<Test>("test") {

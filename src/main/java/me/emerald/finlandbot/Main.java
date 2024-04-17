@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -22,7 +21,11 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.earthmc.emcapiclient.EMCAPIClient;
+import org.apache.commons.io.FilenameUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.*;
 
 public class Main extends ListenerAdapter {
@@ -68,7 +71,7 @@ public class Main extends ListenerAdapter {
         timer.schedule(new TimerTask(){
             public void run(){
                 //owner-only commands
-                System.out.println("Current guilds: "+bot.getGuilds().toString());
+                System.out.println("Current guilds: "+ bot.getGuilds());
                 CommandListUpdateAction commands = bot.getGuildById("406810397018947596").updateCommands();
 
                 commands.addCommands(
@@ -81,7 +84,7 @@ public class Main extends ListenerAdapter {
                 );
                 commands.queue();
             }
-        },5000);
+        },2000);
 
 
         timer.scheduleAtFixedRate(new TimerTask(){
@@ -91,20 +94,22 @@ public class Main extends ListenerAdapter {
         },0,5000);
     }
 
-
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         switch (event.getName()) {
             case "ping" -> pingCommand(event);
             case "voterid" -> new IDCommand().idCommand(event);
             case "settings" -> new SettingsCommand().settingsCommand(event);
-            case "updatecommands" -> updateCommands(event);
+            case "updatecommands" -> updateCommandsCommand(event);
+            case "stop" -> shutDownCommand(event);
+            case "restart" -> restartCommand(event);
             default -> event.reply("This command is still in development...").queue();
         }
     }
 
 
     //the simplest utils ----------------------------------------------------------------------
+
 
     public static boolean sendDM(User user, String content) {
         try {
@@ -118,54 +123,6 @@ public class Main extends ListenerAdapter {
         }
         return false;
     }
-
-
-    @SuppressWarnings("unchecked")
-    public static void updateCommands(SlashCommandInteractionEvent event) {
-        if (event.getUser().getId().equals("258934231345004544")) { //verify, it's the owner running the command
-            //remove all commands the bot has
-            for (Command c: (List<Command>) bot.retrieveCommands()) {
-                c.delete();
-            }
-
-            //add global commands
-            CommandListUpdateAction commands = bot.updateCommands();
-
-            commands.addCommands(
-                    Commands.slash("ping", "Fragmentation is a multistage process.")
-                            .setDefaultPermissions(DefaultMemberPermissions.ENABLED),
-                    Commands.slash("voterid","Get your voterID for the currently ongoing elections")
-                            .setDefaultPermissions(DefaultMemberPermissions.ENABLED)
-            );
-            commands.queue();
-
-            //add guild-only commands
-            for (Guild g : bot.getGuilds()) {
-                commands = g.updateCommands();
-                commands.addCommands(
-                        Commands.slash("settings", "Manage bot settings").addSubcommandGroups(
-                                        new SubcommandGroupData("voteparty", "Manage voteparty announcement settings").addSubcommands(
-                                                new SubcommandData("channel", "set the voteparty channel")
-                                                        .addOption(OptionType.CHANNEL, "channel", "channel to send the announcements in", true),
-                                                new SubcommandData("role", "set the role to be notified")
-                                                        .addOption(OptionType.ROLE, "role", "role to be notified", true),
-                                                new SubcommandData("enable", "Enable the sending of notifications"),
-                                                new SubcommandData("disable", "Disable the sending of notifications"),
-                                                new SubcommandData("number", "aa")
-                                                        .addOption(OptionType.NUMBER, "number", "num")
-                                        )
-                                )
-                                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
-                );
-                commands.queue();
-            }
-            event.reply("Successfully updated commands!").setEphemeral(true).queue();
-        }
-        else {
-            event.reply("You do not have permissions to run this command!").setEphemeral(true).queue();
-        }
-    }
-
 
     private static boolean fiftyRan = false;
     private static boolean tenRan = false;
@@ -199,8 +156,7 @@ public class Main extends ListenerAdapter {
         if (remaining<10) {
             tenRan = true;
         }
-        if (remaining>100)
-        {
+        if (remaining>100) {
             fiftyRan = false;
             tenRan = false;
         }
@@ -210,5 +166,93 @@ public class Main extends ListenerAdapter {
     //simple commands all from here on out --------------------------------------------------------
     private void pingCommand(SlashCommandInteractionEvent event) {
         event.reply("pong").setEphemeral(true).queue();
+    }
+
+
+    public static void updateCommandsCommand(SlashCommandInteractionEvent event) {
+        if (event.getUser().getId().equals("258934231345004544")) { //verify, it's the owner running the command
+            //add global commands
+            CommandListUpdateAction commands = bot.updateCommands();
+
+            commands.addCommands(
+                    Commands.slash("ping", "Fragmentation is a multistage process.")
+                            .setDefaultPermissions(DefaultMemberPermissions.ENABLED),
+                    Commands.slash("voterid","Get your voterID for the currently ongoing elections")
+                            .setDefaultPermissions(DefaultMemberPermissions.ENABLED)
+            );
+            commands.queue();
+
+            //add guild-only commands
+            for (Guild g : bot.getGuilds()) {
+                commands = g.updateCommands();
+                commands.addCommands(
+                        Commands.slash("settings", "Manage bot settings").addSubcommandGroups(
+                                        new SubcommandGroupData("voteparty", "Manage voteparty announcement settings").addSubcommands(
+                                                new SubcommandData("channel", "set the voteparty channel")
+                                                        .addOption(OptionType.CHANNEL, "channel", "channel to send the announcements in", true),
+                                                new SubcommandData("role", "set the role to be notified")
+                                                        .addOption(OptionType.ROLE, "role", "role to be notified", true),
+                                                new SubcommandData("enable", "Enable the sending of notifications"),
+                                                new SubcommandData("disable", "Disable the sending of notifications")
+                                                )
+                                )
+                                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
+                );
+
+                //owner-only commands
+                if (g.getId().equals("406810397018947596")) {
+                    commands.addCommands(
+                            Commands.slash("restart","Restart the bot")
+                                    .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
+                            Commands.slash("stop","Stops the bot")
+                                    .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
+                            Commands.slash("updatecommands","Updates slash commands of the bot")
+                                    .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
+                    );
+                }
+
+                commands.queue();
+            }
+            event.reply("Successfully updated commands!").setEphemeral(true).queue();
+        }
+        else {
+            event.reply("You do not have permissions to run this command!").setEphemeral(true).queue();
+        }
+    }
+
+
+    private void shutDownCommand(SlashCommandInteractionEvent event) {
+        event.reply("Shutting down...").setEphemeral(true).queue();
+        bot.shutdown();
+        timer.schedule(new TimerTask(){
+            public void run(){
+                System.exit(0);
+            }
+        },2000);
+    }
+
+
+    private void restartCommand(SlashCommandInteractionEvent event) {
+        event.reply("Restarting...").setEphemeral(true).queue();
+        bot.shutdown();
+        timer.schedule(new TimerTask(){
+            public void run(){
+                String currJar = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+
+                //TODO remove this, as the final version of the bot will be running on linux
+                if (System.getProperty("os.name").contains("Windows"))
+                {
+                    //Java adds a slash in front of the filepath on Windows and the command won't work with the slash (or backslash) as the first character
+                    currJar = currJar.substring(1);
+                }
+                ProcessBuilder builder = new ProcessBuilder("java", "-jar", FilenameUtils.separatorsToSystem(currJar));
+                try {
+                    builder.start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                System.exit(0);
+            }
+        },2000);
     }
 }

@@ -43,8 +43,7 @@ public class ConfigUtils {
     }
 
 
-    public static Set<String> getServers()
-    {
+    public static Set<String> getServers() {
         Map<String,Object> guilds = (Map<String,Object>)Main.configuration.get("guilds");
         return guilds.keySet();
     }
@@ -64,6 +63,10 @@ public class ConfigUtils {
 
     public static boolean setServerSetting(String serverID, String setting, String value) {
         Map<String,Object> guilds = (Map<String,Object>)Main.configuration.get("guilds");
+        if (guilds == null) {
+            guilds = new HashMap<>();
+        }
+
         Map<String, String> settings;
 
         for(String guild : guilds.keySet()) {

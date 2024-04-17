@@ -2,6 +2,7 @@ package me.emerald.finlandbot;
 
 import me.emerald.finlandbot.commands.IDCommand;
 import me.emerald.finlandbot.commands.SettingsCommand;
+import me.emerald.finlandbot.listeners.AdListener;
 import me.emerald.finlandbot.utils.ConfigUtils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -63,6 +64,7 @@ public class Main extends ListenerAdapter {
         bot = JDABuilder.create((String)configuration.get("token"), intents)
                 .setActivity(Activity.listening("you from within your walls :3"))
                 .addEventListeners(new Main())
+                .addEventListeners(new AdListener())
                 .build();
 
         //wait for the bot to load in
@@ -192,7 +194,13 @@ public class Main extends ListenerAdapter {
                                                         .addOption(OptionType.ROLE, "role", "role to be notified", true),
                                                 new SubcommandData("enable", "Enable the sending of notifications"),
                                                 new SubcommandData("disable", "Disable the sending of notifications")
-                                                )
+                                                ),
+                                        new SubcommandGroupData("advertisementgifs","Manage advertisement channel gif sending settings, which will send gifs if an ad is a duplicate").addSubcommands(
+                                                new SubcommandData("channel","set the advertisements channel")
+                                                        .addOption(OptionType.CHANNEL,"channel","advertisements channel",true),
+                                                new SubcommandData("enable", "Enable the sending of gifs"),
+                                                new SubcommandData("disable", "Disable the sending of gifs")
+                                        )
                                 )
                                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
                 );

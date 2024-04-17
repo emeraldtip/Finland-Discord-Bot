@@ -64,7 +64,6 @@ public class IDUtils {
 
 
     //for generating voterIDs
-    @SuppressWarnings("StringConcatenationInLoop")
     public static String generateID(String discID, String mcID) {
         String seed = (String)Main.configuration.get("seed");
         String input  = seed+discID+mcID; //combine all of em together
@@ -74,11 +73,11 @@ public class IDUtils {
                     .digest(input.getBytes(StandardCharsets.UTF_8));
 
             //turning the hashed byte array into a string and returning it
-            String output = "";
+            StringBuilder output = new StringBuilder();
             for (byte hashedByte : hashedData) {
-                output += Integer.toString((hashedByte & 0xff) + 0x100, 16).substring(1);
+                output.append(Integer.toString((hashedByte & 0xff) + 0x100, 16).substring(1));
             }
-            return output;
+            return output.toString();
         }
         catch (NoSuchAlgorithmException ignored) {} //this should never happen
         return "";

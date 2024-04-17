@@ -28,13 +28,11 @@ public class SettingsCommand {
                         success = ConfigUtils.setServerSetting(guildID, "vprole", event.getOption("role").getAsString());
                         break;
                     case "enable":
-                        if (!ConfigUtils.getServerSettings(guildID).containsKey("vpchannel"))
-                        {
+                        if (!ConfigUtils.getServerSettings(guildID).containsKey("vpchannel")) {
                             event.reply("You do not have the voteparty alerts channel set").queue();
                             return;
                         }
-                        if(!ConfigUtils.getServerSettings(guildID).containsKey("vprole"))
-                        {
+                        if(!ConfigUtils.getServerSettings(guildID).containsKey("vprole")) {
                             event.reply("You do not have the voteparty alerted role set").queue();
                             return;
                         }
@@ -43,6 +41,32 @@ public class SettingsCommand {
                         break;
                     case "disable":
                         success = ConfigUtils.setServerSetting(guildID,"vpenabled","false");
+                        break;
+                    default:
+                        event.reply("Not implemented yet").queue();
+                        break;
+                }
+                break;
+            case "advertisementgifs":
+                switch (event.getSubcommandName()) {
+                    case "channel":
+                        if (event.getOption("channel").getAsChannel().getType().equals(ChannelType.TEXT)) { //only text channels allowed
+                            success = ConfigUtils.setServerSetting(guildID, "adchannel", event.getOption("channel").getAsString());
+                        }
+                        else {
+                            event.reply("Please select a text channel").queue();
+                        }
+                        break;
+                    case "enable":
+                        if (!ConfigUtils.getServerSettings(guildID).containsKey("adchannel")) {
+                            event.reply("You do not have the advertisements channel set").queue();
+                            return;
+                        }
+
+                        success = ConfigUtils.setServerSetting(guildID,"adenabled","true");
+                        break;
+                    case "disable":
+                        success = ConfigUtils.setServerSetting(guildID,"adenabled","false");
                         break;
                     default:
                         event.reply("Not implemented yet").queue();

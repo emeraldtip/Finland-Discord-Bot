@@ -17,10 +17,17 @@ And then run the jar file (the one ending with "-all.jar") in your shell of choi
 The Java version used in the project is Java 17.
 
 ## Or docker (It's pretty much butchered to work)
+First create a config.yml file in the root directory of the cloned repo with the following structure:
+```yml
+token: #discord bot token
+seed: #seed for voterID generation
+```
+Then run
 ```
 sudo docker build -t emeraldtip/finlandbot .
 ```
-to build the image and
+to build the image and finally
 ```
 sudo docker run -i -t emeraldtip/finlandbot .
 ```
+to run the actual bot.

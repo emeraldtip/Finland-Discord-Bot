@@ -28,6 +28,6 @@ docker build -t emeraldtip/finlandbot .
 ```
 to build the image and finally
 ```
-docker run -i -t emeraldtip/finlandbot .
+docker run -i -t emeraldtip/finlandbot
 ```
 to run the actual bot.

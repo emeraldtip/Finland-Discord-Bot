@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -84,6 +85,24 @@ public class ConfigUtils {
         guilds.put(serverID,settings);
         Main.configuration.put("guilds",guilds);
 
+        return saveConfig();
+    }
+
+    public static ArrayList<String> getAds() {
+        ArrayList<String> ads = (ArrayList<String>) Main.configuration.get("ads");
+        if (ads==null) {
+            return new ArrayList<String>();
+        }
+        return ads;
+    }
+
+    public static boolean addAd(String adHash) {
+        ArrayList<String> ads = (ArrayList<String>) Main.configuration.get("ads");
+        if (ads==null) {
+            ads = new ArrayList<String>();
+        }
+        ads.add(adHash);
+        Main.configuration.put("ads",ads);
         return saveConfig();
     }
 }

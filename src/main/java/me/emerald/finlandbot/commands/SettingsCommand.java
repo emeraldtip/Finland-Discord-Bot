@@ -3,6 +3,8 @@ package me.emerald.finlandbot.commands;
 import me.emerald.finlandbot.utils.ConfigUtils;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class SettingsCommand {
 
@@ -37,6 +39,12 @@ public class SettingsCommand {
                             return;
                         }
 
+                        event.getGuild().getTextChannelById(ConfigUtils.getServerSettings(guildID).get("vpchannel"))
+                                .sendMessage("Click the buttons below to manage your voteparty alerts settings")
+                                .addActionRow(
+                                        Button.success("enable-vp","Enable VoteParty alerts"),
+                                        Button.danger("disable-vp","Disable VoteParty alerts")
+                                ).queue();
                         success = ConfigUtils.setServerSetting(guildID,"vpenabled","true");
                         break;
                     case "disable":

@@ -7,12 +7,10 @@ import me.emerald.finlandbot.utils.ConfigUtils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -58,7 +56,8 @@ public class Main extends ListenerAdapter {
                 GatewayIntent.GUILD_MESSAGE_REACTIONS,
                 GatewayIntent.MESSAGE_CONTENT,
                 GatewayIntent.DIRECT_MESSAGES,
-                GatewayIntent.DIRECT_MESSAGE_REACTIONS
+                GatewayIntent.DIRECT_MESSAGE_REACTIONS,
+                GatewayIntent.GUILD_MEMBERS
         );
 
         bot = JDABuilder.create((String)configuration.get("token"), intents)
@@ -84,7 +83,7 @@ public class Main extends ListenerAdapter {
                 );
                 commands.queue();
             }
-        },2000);
+        },3000);
 
 
         timer.scheduleAtFixedRate(new TimerTask(){
@@ -103,7 +102,35 @@ public class Main extends ListenerAdapter {
             case "updatecommands" -> updateCommandsCommand(event);
             case "stop" -> shutDownCommand(event);
             case "restart" -> restartCommand(event);
-            default -> event.reply("This command is still in development...").queue();
+            default -> event.reply("This command is still in development...").setEphemeral(true).queue();
+        }
+    }
+
+    @Override
+    public void onButtonInteraction(ButtonInteractionEvent event) {
+        Guild guild = event.getGuild();
+        guild.loadMembers();
+
+        Role role;
+        Member member;
+        switch (event.getComponentId()) {
+            case "enable-vp":
+                role = guild.getRoleById(ConfigUtils.getServerSettings(guild.getId()).get("vprole"));
+                member = guild.getMember(event.getUser());
+                guild.addRoleToMember(member, role).queue();
+                event.reply("Sucessfully enabled VoteParty Alerts").setEphemeral(true).queue();
+                break;
+            case "disable-vp":
+                role =  guild.getRoleById(ConfigUtils.getServerSettings(guild.getId()).get("vprole"));
+                member = guild.getMember(event.getUser());
+                if (member.getRoles().contains(role)) {
+                    guild.removeRoleFromMember(member,role).queue();
+                }
+                event.reply("Sucessfully disabled VoteParty Alerts").setEphemeral(true).queue();
+                break;
+            default:
+                event.reply("Not implemented yet").setEphemeral(true).queue();
+                break;
         }
     }
 
@@ -188,10 +215,10 @@ public class Main extends ListenerAdapter {
                 commands.addCommands(
                         Commands.slash("settings", "Manage bot settings").addSubcommandGroups(
                                         new SubcommandGroupData("voteparty", "Manage voteparty announcement settings").addSubcommands(
-                                                new SubcommandData("channel", "set the voteparty channel")
+                                                new SubcommandData("channel", "set the voteparty announcements channel")
                                                         .addOption(OptionType.CHANNEL, "channel", "channel to send the announcements in", true),
                                                 new SubcommandData("role", "set the role to be notified")
-                                                        .addOption(OptionType.ROLE, "role", "role to be notified", true),
+                                                        .addOption(OptionType.ROLE, "role", "make sure the role is lower than the bot's role or it won't work ", true),
                                                 new SubcommandData("enable", "Enable the sending of notifications"),
                                                 new SubcommandData("disable", "Disable the sending of notifications")
                                                 ),

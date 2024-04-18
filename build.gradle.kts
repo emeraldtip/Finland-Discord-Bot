@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "me.emerald"
-version = "0.0.36" //Somehow should get this thing to update with the commit number
+version = "0.1.0" //Somehow should get this thing to update with the commit number
 
 repositories {
     mavenCentral()

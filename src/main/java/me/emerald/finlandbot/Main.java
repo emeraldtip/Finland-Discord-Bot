@@ -209,7 +209,7 @@ public class Main extends ListenerAdapter {
             commands.addCommands(
                     Commands.slash("ping", "Fragmentation is a multistage process.")
                             .setDefaultPermissions(DefaultMemberPermissions.ENABLED),
-                    Commands.slash("voterid","Get your voterID for the currently ongoing elections")
+                    Commands.slash("voteparty","Get the number of votes remaining until the occurrence of the next VoteParty")
                             .setDefaultPermissions(DefaultMemberPermissions.ENABLED)
             );
             commands.queue();
@@ -235,7 +235,8 @@ public class Main extends ListenerAdapter {
                                 )
                         )
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
-                        Commands.slash("voteparty","Get the number of votes remaining until the occurrence of the next VoteParty")
+                        Commands.slash("voterid","Get your voterID for the currently ongoing elections")
+                                .setDefaultPermissions(DefaultMemberPermissions.ENABLED)
                 );
 
                 //developer-only commands

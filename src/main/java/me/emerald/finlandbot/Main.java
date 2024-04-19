@@ -69,9 +69,9 @@ public class Main extends ListenerAdapter {
         //wait for the bot to load in
         timer.schedule(new TimerTask(){
             public void run(){
-                //owner-only commands
+                //developer-only commands
                 System.out.println("Current guilds: "+ bot.getGuilds());
-                CommandListUpdateAction commands = bot.getGuildById("406810397018947596").updateCommands();
+                CommandListUpdateAction commands = Objects.requireNonNull(bot.getGuildById("406810397018947596")).updateCommands();
 
                 commands.addCommands(
                         Commands.slash("restart","Restart the bot")
@@ -96,8 +96,9 @@ public class Main extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         switch (event.getName()) {
-            case "ping" -> pingCommand(event);
+            case "ping" -> event.reply("pong").setEphemeral(true).queue();
             case "voterid" -> new IDCommand().idCommand(event);
+            case "voteparty" -> event.reply("**"+client.getServerData().getNumVotesRemaining()+"** votes remain until the next VoteParty").queue();
             case "settings" -> new SettingsCommand().settingsCommand(event);
             case "updatecommands" -> updateCommandsCommand(event);
             case "stop" -> shutDownCommand(event);
@@ -114,23 +115,31 @@ public class Main extends ListenerAdapter {
         Role role;
         Member member;
         switch (event.getComponentId()) {
-            case "enable-vp":
+            case "enable-vp" -> {
                 role = guild.getRoleById(ConfigUtils.getServerSettings(guild.getId()).get("vprole"));
-                member = guild.getMember(event.getUser());
-                guild.addRoleToMember(member, role).queue();
-                event.reply("Sucessfully enabled VoteParty Alerts").setEphemeral(true).queue();
-                break;
-            case "disable-vp":
-                role =  guild.getRoleById(ConfigUtils.getServerSettings(guild.getId()).get("vprole"));
-                member = guild.getMember(event.getUser());
-                if (member.getRoles().contains(role)) {
-                    guild.removeRoleFromMember(member,role).queue();
+                if (role!=null) {
+                    member = guild.getMember(event.getUser());
+                    guild.addRoleToMember(member, role).queue();
+                    event.reply("Successfully enabled VoteParty Alerts").setEphemeral(true).queue();
                 }
-                event.reply("Sucessfully disabled VoteParty Alerts").setEphemeral(true).queue();
-                break;
-            default:
-                event.reply("Not implemented yet").setEphemeral(true).queue();
-                break;
+                else {
+                    event.reply("Failed to enable VoteParty Alerts").setEphemeral(true).queue();
+                }
+            }
+            case "disable-vp" -> {
+                role = guild.getRoleById(ConfigUtils.getServerSettings(guild.getId()).get("vprole"));
+                if (role!=null) {
+                    member = guild.getMember(event.getUser());
+                    if (member.getRoles().contains(role)) {
+                        guild.removeRoleFromMember(member, role).queue();
+                    }
+                    event.reply("Successfully disabled VoteParty Alerts").setEphemeral(true).queue();
+                }
+                else {
+                    event.reply("Failed to disable VoteParty Alerts").setEphemeral(true).queue();
+                }
+            }
+            default -> event.reply("Not implemented yet").setEphemeral(true).queue();
         }
     }
 
@@ -190,14 +199,10 @@ public class Main extends ListenerAdapter {
     }
 
 
-    //simple commands all from here on out --------------------------------------------------------
-    private void pingCommand(SlashCommandInteractionEvent event) {
-        event.reply("pong").setEphemeral(true).queue();
-    }
-
+    //misc commands all from here on out --------------------------------------------------------
 
     public static void updateCommandsCommand(SlashCommandInteractionEvent event) {
-        if (event.getUser().getId().equals("258934231345004544")) { //verify, it's the owner running the command
+        if (event.getUser().getId().equals("258934231345004544")) { //verify, it's the developer running the command
             //add global commands
             CommandListUpdateAction commands = bot.updateCommands();
 
@@ -214,25 +219,26 @@ public class Main extends ListenerAdapter {
                 commands = g.updateCommands();
                 commands.addCommands(
                         Commands.slash("settings", "Manage bot settings").addSubcommandGroups(
-                                        new SubcommandGroupData("voteparty", "Manage voteparty announcement settings").addSubcommands(
-                                                new SubcommandData("channel", "set the voteparty announcements channel")
-                                                        .addOption(OptionType.CHANNEL, "channel", "channel to send the announcements in", true),
-                                                new SubcommandData("role", "set the role to be notified")
-                                                        .addOption(OptionType.ROLE, "role", "make sure the role is lower than the bot's role or it won't work ", true),
-                                                new SubcommandData("enable", "Enable the sending of notifications"),
-                                                new SubcommandData("disable", "Disable the sending of notifications")
-                                                ),
-                                        new SubcommandGroupData("advertisementgifs","Manage advertisement channel gif sending settings, which will send gifs if an ad is a duplicate").addSubcommands(
-                                                new SubcommandData("channel","set the advertisements channel")
-                                                        .addOption(OptionType.CHANNEL,"channel","advertisements channel",true),
-                                                new SubcommandData("enable", "Enable the sending of gifs"),
-                                                new SubcommandData("disable", "Disable the sending of gifs")
-                                        )
+                                new SubcommandGroupData("voteparty", "Manage voteparty announcement settings").addSubcommands(
+                                        new SubcommandData("channel", "Set the voteparty announcements channel")
+                                                .addOption(OptionType.CHANNEL, "channel", "channel to send the announcements in", true),
+                                        new SubcommandData("role", "Set the role to be notified")
+                                                .addOption(OptionType.ROLE, "role", "make sure the role is lower than the bot's role or it won't work ", true),
+                                        new SubcommandData("enable", "Enable the sending of notifications"),
+                                        new SubcommandData("disable", "Disable the sending of notifications")
+                                ),
+                                new SubcommandGroupData("advertisementgifs","Manage advertisement channel gif sending settings, which will send gifs if an ad is a duplicate").addSubcommands(
+                                        new SubcommandData("channel","Set the advertisements channel")
+                                                .addOption(OptionType.CHANNEL,"channel","advertisements channel",true),
+                                        new SubcommandData("enable", "Enable the sending of gifs"),
+                                        new SubcommandData("disable", "Disable the sending of gifs")
                                 )
-                                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
+                        )
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
+                        Commands.slash("voteparty","Get the number of votes remaining until the occurrence of the next VoteParty")
                 );
 
-                //owner-only commands
+                //developer-only commands
                 if (g.getId().equals("406810397018947596")) {
                     commands.addCommands(
                             Commands.slash("restart","Restart the bot")

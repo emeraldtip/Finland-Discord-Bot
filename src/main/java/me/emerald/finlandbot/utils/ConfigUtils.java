@@ -91,7 +91,7 @@ public class ConfigUtils {
     public static ArrayList<String> getAds() {
         ArrayList<String> ads = (ArrayList<String>) Main.configuration.get("ads");
         if (ads==null) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
         return ads;
     }
@@ -99,7 +99,7 @@ public class ConfigUtils {
     public static boolean addAd(String adHash) {
         ArrayList<String> ads = (ArrayList<String>) Main.configuration.get("ads");
         if (ads==null) {
-            ads = new ArrayList<String>();
+            ads = new ArrayList<>();
         }
         ads.add(adHash);
         Main.configuration.put("ads",ads);

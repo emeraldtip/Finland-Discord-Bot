@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "me.emerald"
-version = "0.1.0" //Somehow should get this thing to update with the commit number
+version = "0.1.2" //Somehow should get this thing to update with the commit number
 
 repositories {
     mavenCentral()
@@ -19,7 +19,7 @@ dependencies {
     implementation("net.dv8tion:JDA:5.0.0-beta.21")
     implementation("org.yaml:snakeyaml:2.2")
     implementation("ch.qos.logback:logback-classic:1.5.3")
-    implementation("com.github.Fruitloopins:EMCAPIClient:1ab9702b34699816157c00759bbf55c84ca527b7")
+    implementation("com.github.Fruitloopins:EMCAPIClient:1ab9702b34")
     implementation("commons-io:commons-io:2.16.1")
 }
 

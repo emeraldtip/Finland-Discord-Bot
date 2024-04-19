@@ -22,7 +22,9 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.earthmc.emcapiclient.EMCAPIClient;
 import org.apache.commons.io.FilenameUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 
 public class Main extends ListenerAdapter {
@@ -79,6 +81,8 @@ public class Main extends ListenerAdapter {
                         Commands.slash("stop","Stops the bot")
                                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
                         Commands.slash("updatecommands","Updates slash commands of the bot")
+                                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
+                        Commands.slash("update","Pulls changes from the master branch, removes the old executables and builds new ones")
                                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
                 );
                 commands.queue();
@@ -93,6 +97,7 @@ public class Main extends ListenerAdapter {
         },0,5000);
     }
 
+
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         switch (event.getName()) {
@@ -101,11 +106,13 @@ public class Main extends ListenerAdapter {
             case "voteparty" -> event.reply("**"+client.getServerData().getNumVotesRemaining()+"** votes remain until the next VoteParty").queue();
             case "settings" -> new SettingsCommand().settingsCommand(event);
             case "updatecommands" -> updateCommandsCommand(event);
+            case "update" -> updateCommand(event);
             case "stop" -> shutDownCommand(event);
             case "restart" -> restartCommand(event);
             default -> event.reply("This command is still in development...").setEphemeral(true).queue();
         }
     }
+
 
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
@@ -146,7 +153,6 @@ public class Main extends ListenerAdapter {
 
     //the simplest utils ----------------------------------------------------------------------
 
-
     public static boolean sendDM(User user, String content) {
         try {
             user.openPrivateChannel()
@@ -159,6 +165,21 @@ public class Main extends ListenerAdapter {
         }
         return false;
     }
+
+
+    public static void printCommandOutput(Process proc) {
+        try {
+            BufferedReader out = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            String s;
+            while ((s = out.readLine()) != null) {
+                System.out.println(s);
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
 
     private static boolean fiftyRan = false;
     private static boolean tenRan = false;
@@ -247,6 +268,8 @@ public class Main extends ListenerAdapter {
                             Commands.slash("stop","Stops the bot")
                                     .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
                             Commands.slash("updatecommands","Updates slash commands of the bot")
+                                    .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
+                            Commands.slash("update","Pulls changes from the master branch, removes the old executables and builds new ones")
                                     .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
                     );
                 }
@@ -261,38 +284,77 @@ public class Main extends ListenerAdapter {
     }
 
 
-    private void shutDownCommand(SlashCommandInteractionEvent event) {
-        event.reply("Shutting down...").setEphemeral(true).queue();
-        bot.shutdown();
-        timer.schedule(new TimerTask(){
-            public void run(){
-                System.exit(0);
+    private void updateCommand(SlashCommandInteractionEvent event) {
+        if (event.getUser().getId().equals("258934231345004544")) {
+            try {
+                event.reply("Trying to pull from git").queue();
+                Process pull = Runtime.getRuntime().exec("git pull");
+                printCommandOutput(pull);
+
+                if (pull.waitFor() == 0) {
+                    event.getChannel().sendMessage("Git pull successful").queue();
+                }
+                else {
+                    event.getChannel().sendMessage("Git pull failed").queue();
+                    return;
+                }
+
+                //pain
+                String currJar = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+                Process build = Runtime.getRuntime().exec("gradle build");
+                printCommandOutput(build);
+
+                if (build.waitFor() == 0) {
+                    event.getChannel().sendMessage("Build successful").queue();
+                }
+                else {
+                    event.getChannel().sendMessage("Build failed").queue();
+                    return;
+                }
+
             }
-        },2000);
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    private void shutDownCommand(SlashCommandInteractionEvent event) {
+        if (event.getUser().getId().equals("258934231345004544")) {
+            event.reply("Shutting down...").setEphemeral(true).queue();
+            bot.shutdown();
+            timer.schedule(new TimerTask() {
+                public void run() {
+                    System.exit(0);
+                }
+            }, 2000);
+        }
     }
 
 
     private void restartCommand(SlashCommandInteractionEvent event) {
-        event.reply("Restarting...").setEphemeral(true).queue();
-        bot.shutdown();
-        timer.schedule(new TimerTask(){
-            public void run(){
-                String currJar = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+        if (event.getUser().getId().equals("258934231345004544")) {
+            event.reply("Restarting...").setEphemeral(true).queue();
+            bot.shutdown();
+            timer.schedule(new TimerTask() {
+                public void run() {
+                    String currJar = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
 
-                //TODO remove this, as the final version of the bot will be running on linux
-                if (System.getProperty("os.name").contains("Windows"))
-                {
-                    //Java adds a slash in front of the filepath on Windows and the command won't work with the slash (or backslash) as the first character
-                    currJar = currJar.substring(1);
+                    //TODO remove this, as the final version of the bot will be running on linux
+                    if (System.getProperty("os.name").contains("Windows")) {
+                        //Java adds a slash in front of the filepath on Windows and the command won't work with the slash (or backslash) as the first character
+                        currJar = currJar.substring(1);
+                    }
+                    ProcessBuilder builder = new ProcessBuilder("java", "-jar", FilenameUtils.separatorsToSystem(currJar));
+                    try {
+                        builder.start();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    System.exit(0);
                 }
-                ProcessBuilder builder = new ProcessBuilder("java", "-jar", FilenameUtils.separatorsToSystem(currJar));
-                try {
-                    builder.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                System.exit(0);
-            }
-        },2000);
+            }, 2000);
+        }
     }
 }

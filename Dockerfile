@@ -8,7 +8,11 @@ RUN apk update && \
 COPY . .
 #build it
 RUN gradle build
-#move config file into the correct place
-RUN mv config.yml build/libs/config.yml
+
+#set up app folder
+RUN mkdir app
+RUN mv build/libs/FinlandBot-*-all.jar app/
+RUN mkdir app/data
+
 #run the bot
-CMD java -jar build/libs/FinlandBot-*-all.jar
+CMD java -jar app/FinlandBot-*-all.jar

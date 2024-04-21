@@ -2,3 +2,4 @@
 build/
 out/
 config.yml
+docker-compose.yml

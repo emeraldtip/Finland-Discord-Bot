@@ -80,14 +80,14 @@ public class Main extends ListenerAdapter {
                 );
                 commands.queue();
             }
-        },3000);
+        },10000);
 
 
         timer.scheduleAtFixedRate(new TimerTask(){
             public void run(){
                 checkVoteParty();
             }
-        },10000,5000);
+        },11000,5000);
     }
 
 

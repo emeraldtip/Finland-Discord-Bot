@@ -18,7 +18,7 @@ public class ConfigUtils {
     public static boolean loadConfig() {
         try {
             Yaml yaml = new Yaml();
-            InputStream stream = new FileInputStream(Main.jarLoc+"config.yml");
+            InputStream stream = new FileInputStream(Main.jarLoc+"/data/config.yml");
             Main.configuration = yaml.load(stream);
             return true;
         }
@@ -32,7 +32,7 @@ public class ConfigUtils {
     public static boolean saveConfig() {
         try {
             Yaml yaml = new Yaml();
-            FileWriter writer = new FileWriter(Main.jarLoc+"config.yml");
+            FileWriter writer = new FileWriter(Main.jarLoc+"/data/config.yml");
             yaml.dump(Main.configuration,writer);
             writer.close();
             return true;

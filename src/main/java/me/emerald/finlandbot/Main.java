@@ -1,6 +1,6 @@
 package me.emerald.finlandbot;
 
-import me.emerald.finlandbot.commands.DevCommand;
+import me.emerald.finlandbot.commands.DevCommands;
 import me.emerald.finlandbot.commands.IDCommand;
 import me.emerald.finlandbot.commands.SettingsCommand;
 import me.emerald.finlandbot.listeners.AdListener;
@@ -14,17 +14,12 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.earthmc.emcapiclient.EMCAPIClient;
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
@@ -36,12 +31,9 @@ public class Main extends ListenerAdapter {
     public final static EMCAPIClient client = new EMCAPIClient();
     public static JDA bot;
 
-    public static Timer timer = new Timer();
+    public static final Timer timer = new Timer();
 
-    public static void main(String[] args)
-    {
-        new Main().init();
-    }
+    public static void main(String[] args) {new Main().init();}
 
 
     @SuppressWarnings("DataFlowIssue")
@@ -106,10 +98,10 @@ public class Main extends ListenerAdapter {
             case "voterid" -> new IDCommand().idCommand(event);
             case "voteparty" -> event.reply("**"+client.getServerData().getNumVotesRemaining()+"** votes remain until the next VoteParty").queue();
             case "settings" -> new SettingsCommand().settingsCommand(event);
-            case "updatecommands" -> new DevCommand().updateCommandsCommand(event);
-            case "update" -> new DevCommand().updateCommand(event);
-            case "stop" -> new DevCommand().shutDownCommand(event);
-            case "restart" -> new DevCommand().restartCommand(event);
+            case "updatecommands" -> new DevCommands().updateCommandsCommand(event);
+            case "update" -> new DevCommands().updateCommand(event);
+            case "stop" -> new DevCommands().shutDownCommand(event);
+            case "restart" -> new DevCommands().restartCommand(event);
             default -> event.reply("This command is still in development...").setEphemeral(true).queue();
         }
     }

@@ -17,7 +17,7 @@ public class IDUtils {
         //read and check if name is already stored
         try {
             //csv, because I want human readability
-            BufferedReader reader = new BufferedReader(new FileReader("voterIDs.csv"));
+            BufferedReader reader = new BufferedReader(new FileReader(Main.jarLoc+"/data/voterIDs.csv"));
 
             int lineCounter = 0;
             String line;
@@ -36,7 +36,7 @@ public class IDUtils {
         catch (FileNotFoundException e) {
             System.out.println("voterID csv file doesn't exist yet, creating...");
             try {
-                FileWriter writer = new FileWriter("voterIDs.csv");
+                FileWriter writer = new FileWriter(Main.jarLoc+"/data/voterIDs.csv");
                 writer.write("sep=,\n");
                 writer.write("Username,voterID\n");
                 writer.close();
@@ -52,7 +52,7 @@ public class IDUtils {
         //actually writing data into file:
         try {
             PrintWriter writer = new PrintWriter(new FileOutputStream(
-                    "voterIDs.csv",
+                    Main.jarLoc+"/data/voterIDs.csv",
                     true));
             writer.append(username+","+id+"\n");
             writer.close();

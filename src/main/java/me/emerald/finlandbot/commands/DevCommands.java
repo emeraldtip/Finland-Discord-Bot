@@ -16,7 +16,7 @@ import java.util.TimerTask;
 
 import static me.emerald.finlandbot.Main.*;
 
-public class DevCommand {
+public class DevCommands {
     public void updateCommandsCommand(SlashCommandInteractionEvent event) {
         if (event.getUser().getId().equals("258934231345004544")) { //verify, it's the developer running the command
             //add global commands

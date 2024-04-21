@@ -96,7 +96,7 @@ public class Main extends ListenerAdapter {
         switch (event.getName()) {
             case "ping" -> event.reply("pong").setEphemeral(true).queue();
             case "voterid" -> new IDCommand().idCommand(event);
-            case "voteparty" -> event.reply("**"+client.getServerData().getNumVotesRemaining()+"** votes remain until the next VoteParty").queue();
+            case "voteparty" -> event.reply("**"+remaining+"** votes remain until the next VoteParty").queue();
             case "settings" -> new SettingsCommand().settingsCommand(event);
             case "updatecommands" -> new DevCommands().updateCommandsCommand(event);
             case "update" -> new DevCommands().updateCommand(event);
@@ -176,8 +176,9 @@ public class Main extends ListenerAdapter {
 
     private static boolean fiftyRan = false;
     private static boolean tenRan = false;
+    public static int remaining = 5000;
     public static void checkVoteParty() {
-        int remaining = client.getServerData().getNumVotesRemaining();
+        remaining = client.getServerData().getNumVotesRemaining();
         if ((remaining<50 && !fiftyRan) || (remaining<10 && !tenRan)) {
             for (String s :ConfigUtils.getServers()) {
                 System.out.println(s);

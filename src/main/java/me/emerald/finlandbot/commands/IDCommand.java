@@ -10,7 +10,14 @@ public class IDCommand {
 
     public void idCommand(SlashCommandInteractionEvent event) {
         String discID = event.getUser().getId();
-        DiscordIdentifier discData = Main.client.getDiscordIdentifierByString(discID);
+        DiscordIdentifier discData;
+        try {
+            discData = Main.client.getDiscordIdentifierByString(discID);
+        }
+        catch (Exception e) {
+            event.reply("Cannot access the EarthMC API, please try again later").queue();
+            return;
+        }
         String playerID = discData.getUUID();
 
         if (playerID==null) {

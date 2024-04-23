@@ -7,10 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 @SuppressWarnings("unchecked")
@@ -46,6 +43,9 @@ public class ConfigUtils {
 
     public static Set<String> getServers() {
         Map<String,Object> guilds = (Map<String,Object>)Main.configuration.get("guilds");
+        if (guilds == null) {
+            return Collections.emptySet();
+        }
         return guilds.keySet();
     }
 

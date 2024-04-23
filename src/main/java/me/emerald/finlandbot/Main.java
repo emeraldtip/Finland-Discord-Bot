@@ -110,6 +110,7 @@ public class Main extends ListenerAdapter {
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
         Guild guild = event.getGuild();
+        assert guild != null;
         guild.loadMembers();
 
         Role role;
@@ -119,6 +120,7 @@ public class Main extends ListenerAdapter {
                 role = guild.getRoleById(ConfigUtils.getServerSettings(guild.getId()).get("vprole"));
                 if (role!=null) {
                     member = guild.getMember(event.getUser());
+                    assert member != null;
                     guild.addRoleToMember(member, role).queue();
                     event.reply("Successfully enabled VoteParty Alerts").setEphemeral(true).queue();
                 }
@@ -130,6 +132,7 @@ public class Main extends ListenerAdapter {
                 role = guild.getRoleById(ConfigUtils.getServerSettings(guild.getId()).get("vprole"));
                 if (role!=null) {
                     member = guild.getMember(event.getUser());
+                    assert member != null;
                     if (member.getRoles().contains(role)) {
                         guild.removeRoleFromMember(member, role).queue();
                     }
@@ -178,7 +181,13 @@ public class Main extends ListenerAdapter {
     private static boolean tenRan = false;
     public static int remaining = 5000;
     public static void checkVoteParty() {
-        remaining = client.getServerData().getNumVotesRemaining();
+        try {
+            remaining = client.getServerData().getNumVotesRemaining();
+        }
+        catch(Exception e) {
+            System.out.println("Failed to get voteParty data");
+        }
+
         if ((remaining<50 && !fiftyRan) || (remaining<10 && !tenRan)) {
             for (String s :ConfigUtils.getServers()) {
                 System.out.println(s);

@@ -104,7 +104,6 @@ public class DevCommands {
                 }
                 else {
                     event.getChannel().sendMessage("Build failed").queue();
-                    return;
                 }
 
             }

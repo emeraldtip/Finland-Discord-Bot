@@ -185,40 +185,45 @@ public class Main extends ListenerAdapter {
             remaining = client.getServerData().getNumVotesRemaining();
         }
         catch(Exception e) {
-            System.out.println("Failed to get voteParty data");
+            System.out.println("Failed to get voteParty data: "+e.getMessage());
+            return;
         }
 
-        if ((remaining<50 && !fiftyRan) || (remaining<10 && !tenRan)) {
-            for (String s :ConfigUtils.getServers()) {
-                System.out.println(s);
-                HashMap<String,String> settings = ConfigUtils.getServerSettings(s);
-                if (settings.containsKey("vpenabled")) {
-                    if (settings.get("vpenabled").equals("true")) { //enabled shouldn't be true if other settings are not set
-                        Guild guild = bot.getGuildById(s);
-                        if (guild!=null) {
-                            TextChannel channel = guild.getTextChannelById(settings.get("vpchannel"));
-                            if (channel!=null){
-                                Role role = guild.getRoleById(settings.get("vprole"));
-                                if (role!=null)
-                                {
-                                    channel.sendMessage("VoteParty is happening in **"+remaining +"** votes \n"+ role.getAsMention() +" get yo ass on")
-                                            .queue();
+        try {
+            if ((remaining < 50 && !fiftyRan) || (remaining < 10 && !tenRan)) {
+                for (String s : ConfigUtils.getServers()) {
+                    System.out.println(s);
+                    HashMap<String, String> settings = ConfigUtils.getServerSettings(s);
+                    if (settings.containsKey("vpenabled")) {
+                        if (settings.get("vpenabled").equals("true")) { //enabled shouldn't be true if other settings are not set
+                            Guild guild = bot.getGuildById(s);
+                            if (guild != null) {
+                                TextChannel channel = guild.getTextChannelById(settings.get("vpchannel"));
+                                if (channel != null) {
+                                    Role role = guild.getRoleById(settings.get("vprole"));
+                                    if (role != null) {
+                                        channel.sendMessage("VoteParty is happening in **" + remaining + "** votes \n" + role.getAsMention() + " get yo ass on")
+                                                .queue();
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+            if (remaining < 50) {
+                fiftyRan = true;
+            }
+            if (remaining < 10) {
+                tenRan = true;
+            }
+            if (remaining > 100) {
+                fiftyRan = false;
+                tenRan = false;
+            }
         }
-        if (remaining<50) {
-            fiftyRan=true;
-        }
-        if (remaining<10) {
-            tenRan = true;
-        }
-        if (remaining>100) {
-            fiftyRan = false;
-            tenRan = false;
+        catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

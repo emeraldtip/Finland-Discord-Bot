@@ -146,7 +146,7 @@ public class DevCommands {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    System.exit(0);
+                    System.exit(1); //so the docker container restarts itself
                 }
             }, 2000);
         }

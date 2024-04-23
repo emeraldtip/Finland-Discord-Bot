@@ -28,7 +28,7 @@ The Java version used in the project is Java 17.
       finlandbot:
         build: .
         container_name: finlandbot
-        restart: unless-stopped
+        restart: on-failure
         volumes: 
           - /path/to/the/data/folder/on/your/local/drive:/app/data
     ```

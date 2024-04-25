@@ -8,7 +8,8 @@ Run gradlew build
 and the output jar (FinlandBot-version-all.jar) will be in the build/libs folder
 
 ## Running:
-Create the file "config.yml" with the following structure:
+Create a folder called "data"
+Create the file "config.yml" in side the data folder with the following structure:
 
 ```yml
 token: #discord bot token

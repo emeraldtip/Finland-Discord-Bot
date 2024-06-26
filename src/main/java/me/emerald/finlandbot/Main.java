@@ -182,7 +182,7 @@ public class Main extends ListenerAdapter {
     public static int remaining = 5000;
     public static void checkVoteParty() {
         try {
-            remaining = client.getServerData().getNumVotesRemaining();
+            remaining = 5000 - client.getServerData().getNumVotesRemaining();
         }
         catch(Exception e) {
             System.out.println("Failed to get voteParty data: "+e.getMessage());
